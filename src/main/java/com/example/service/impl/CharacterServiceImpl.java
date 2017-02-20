@@ -7,10 +7,8 @@ import com.example.esi.auth.OAuth;
 import com.example.esi.model.*;
 import com.example.persistence.dto.CharDTO;
 import com.example.persistence.dto.SkillDTO;
+import com.example.persistence.entity.*;
 import com.example.persistence.entity.Character;
-import com.example.persistence.entity.CharacterRepository;
-import com.example.persistence.entity.InvTypes;
-import com.example.persistence.entity.InvTypesRepository;
 import com.example.service.CharacterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +36,7 @@ public class CharacterServiceImpl implements CharacterService {
 
     private CharacterRepository characterRepository;
     private InvTypesRepository invTypesRepository;
+    private ChrAncestriesRepository chrAncestriesRepository;
 
     private String DATASOURCE = "tranquility";
 
@@ -47,9 +47,10 @@ public class CharacterServiceImpl implements CharacterService {
     private String secretKey;
 
     @Autowired
-    public CharacterServiceImpl(CharacterRepository characterRepository, InvTypesRepository invTypesRepository) {
+    public CharacterServiceImpl(CharacterRepository characterRepository, InvTypesRepository invTypesRepository, ChrAncestriesRepository chrAncestriesRepository) {
         this.characterRepository = characterRepository;
         this.invTypesRepository = invTypesRepository;
+        this.chrAncestriesRepository = chrAncestriesRepository;
     }
 
     @Override
@@ -141,11 +142,30 @@ public class CharacterServiceImpl implements CharacterService {
         Character character = getCharacter(name);
         ApiClient client = getClient(character.getRefreshToken());
 
+        CharDTO charDTO = new CharDTO();
+
         CharacterResponse characterResponse = new CharacterApi(client).getCharactersCharacterId(character.getCharacterId(),DATASOURCE);
+        List<CharacterWalletsResponse> walletsResponses = new WalletApi(client).getCharactersCharacterIdWallets(character.getCharacterId(),DATASOURCE);
+        charDTO.setBalance(BigDecimal.valueOf(walletsResponses.get(0).getBalance()).divide(new BigDecimal(100),BigDecimal.ROUND_DOWN));
+        charDTO.setCharacterId(character.getCharacterId());
+        charDTO.setCorpId(characterResponse.getCorporationId());
+        charDTO.setName(characterResponse.getName());
+        charDTO.setBirthDate(characterResponse.getBirthday().toString());
+        charDTO.setAncestry(chrAncestriesRepository.findOne(characterResponse.getAncestryId()));
+
         CorporationResponse corporationResponse = new CorporationApi(client).getCorporationsCorporationId(characterResponse.getCorporationId(),DATASOURCE);
+        charDTO.setCorpName(corporationResponse.getCorporationName());
+        charDTO.setCorpTicker(corporationResponse.getTicker());
+        charDTO.setAllianceId(corporationResponse.getAllianceId());
+        charDTO.setCorpMembers(corporationResponse.getMemberCount());
+
+        AllianceResponse allianceResponse = new AllianceApi(client).getAlliancesAllianceId(corporationResponse.getAllianceId(),DATASOURCE);
+        charDTO.setAllianceName(allianceResponse.getAllianceName());
+        charDTO.setAllianceTicker(allianceResponse.getTicker());
+        charDTO.setAllianceFounded(allianceResponse.getDateFounded().toString());
 
 
-        return null;
+        return charDTO;
     }
 
     private Character getCharacter(String name) throws Exception{

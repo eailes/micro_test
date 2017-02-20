@@ -1,5 +1,6 @@
 package com.example.persistence.dto;
 
+import com.example.persistence.entity.ChrAncestries;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 /**
  * User: eailes
@@ -19,6 +21,10 @@ import java.math.BigDecimal;
 @ToString
 @NoArgsConstructor
 public class CharDTO implements Serializable{
-    String name, corp, secStatus, bloodLine;
-    BigDecimal wallet;
+    private String name, birthDate, corpName, corpTicker, allianceName, allianceTicker, allianceFounded, expires;
+    private Integer corpId, allianceId, characterId, corpMembers;
+    private ChrAncestries ancestry;
+    private BigDecimal balance;
+
+
 }

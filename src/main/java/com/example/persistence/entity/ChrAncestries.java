@@ -11,22 +11,18 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 /**
- * User: eailes
- * Created: 2/15/17
- * Time: 9:46 AM
- * Project: micro_test
+ * Created by Ean on 2/17/2017.
  */
 @Entity
 @Getter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class InvGroups {
-    @Id private int groupId;
-    private Integer iconId;
-    private String groupName;
-    private Boolean useBasePrice, anchored, anchorable, fittableNonSingleton, published;
+public class ChrAncestries {
+    @Id private int ancestryId;
+    private String ancestryName, description, shortDescription;
+    private Integer perception, willpower, charisma, memory, intelligence, iconId;
     @OneToOne
-    @JoinColumn(name = "category_id")
-    private InvCategories categories;
+    @JoinColumn(name = "bloodline_id")
+    private ChrBloodlines bloodline;
 }
